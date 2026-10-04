@@ -6,16 +6,8 @@ __X_files/
 snapshot_results/
 inpaper_utils/
 baselines/
-tests/
-configs/*
-!configs/base.yaml
-!configs/morph.yaml
-!configs/mnist_p_base.yaml
-!configs/mnist_p_morph.yaml
-!configs/p2p_base.yaml
-utils/plot_*.py
-utils/make_figures_*.py
-utils/eval_h2z_ssim.py
+archived/
+configs/_env.sh
 
 # python
 __pycache__/
