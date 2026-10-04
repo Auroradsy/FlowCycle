@@ -1,6 +1,5 @@
-# MMCLAST-cg
+# FlowCycle
 
-> **当前服务器运行说明：[SERVER_SETUP.md](SERVER_SETUP.md)**。数据、环境和输出路径以该文档为准；下方历史实验中的 `exps/` 示例是旧目录布局。
 
 **A CycleGAN rewired so that a single invertible flow *is* the bridge between modalities.**
 
@@ -16,7 +15,7 @@ Plain CycleGAN carries two generators, `G_A→B` and `G_B→A`. Each is a comple
 self-contained translator; nothing is shared between them, and neither has a
 representation you can inspect, interpolate, or reuse.
 
-MMCLAST-cg **splits** those two generators instead of augmenting them. Each
+CycleFlow **splits** those two generators instead of augmenting them. Each
 `ResnetGenerator` is cut at its bottleneck into a front half and a back half:
 
 ```
@@ -64,13 +63,13 @@ available to any autoencoder.
 
 ## Parameters
 
-| | plain CycleGAN (×2, bidirectional) | MMCLAST-cg |
+| | plain CycleGAN (×2, bidirectional) | CycleFlow |
 |---|---|---|
 | inference | 31.30 M | **17.49 M** (−44 %) |
 | training | 42.34 M | **23.01 M** (base / latcyc) · 25.77 M (morph, +`D_mix`) |
 
 One CycleGAN generator maps a single direction, so a bidirectional system is
-counted as two. MMCLAST-cg's bridge is **one** 1.84 M flow traversed forwards and
+counted as two. CycleFlow's bridge is **one** 1.84 M flow traversed forwards and
 backwards, and `f⁻¹(f(z)) = z` holds exactly rather than being penalised into place.
 
 ---
@@ -193,7 +192,7 @@ that the shared latent is load-bearing rather than decorative.
 ## Layout
 
 ```
-mmclast-cg/
+CycleFlow/
 ├── train.py                the three-stage trainer
 ├── train_host.py           plain CycleGAN — produces the warm-start checkpoint
 ├── eval.py                 cross-subject u-shuffle probe + both SSIM floors
@@ -254,7 +253,7 @@ filename: `..._a2b_...` is T1 → FA (walk `f` forward), `..._b2a_...` is FA →
 
 `train_host.py` is here because it is the *host initialisation*, not because it
 is a baseline for comparison: `check_init.sh` needs its checkpoint to show that
-MMCLAST-cg starts out identical to it.
+CycleFlow starts out identical to it.
 
 ## Configs
 
