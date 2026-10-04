@@ -174,7 +174,7 @@ def _host_n_blocks(ck, default):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", default="/ix/lzhan/siyuan/datasets/processed_datas/MNIST_CycleFlow/mnist_petct_paired")
+    ap.add_argument("--root", default="datasets/mnist_petct_paired")
     ap.add_argument("--warm", default=os.path.join(CKPT, "mnist_host", "last.pth"))
     ap.add_argument("--tags", nargs="*", default=None)
     ap.add_argument("--batch", type=int, default=64)

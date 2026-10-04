@@ -1,17 +1,12 @@
-# FlowCycle — variant "base"
-# Rewiring only. No L_latcyc, no L_path, no D_mix. Best cross-SSIM of the three; its morph changes the T1 view instead of the FA view (tearing).
-#
+# FlowCycle on ADNI T1/FA -- w/o trajectory regularization
 #   python train.py --config configs/base.yaml
-#
-# Flags typed on the command line override anything here.  The variant presets
-# in train.py are applied last, so w_latcyc / w_path_* are pinned by the variant
-# regardless of what this file says — they are listed for the record.
+# Command-line flags override the values here.
 variant: base
 tag: base
 
 # data --------------------------------------------------------------------
 z_lo: 40                  # axial band, inclusive.  40..49 = the "middle 10";
-z_hi: 49                  # see: python -m data.build_cache --report
+z_hi: 49
 label_scheme: label_4     # CN / EMCI / MCI / LMCI; used only for the split
 seed: 42
 workers: 4

@@ -22,7 +22,7 @@ from torch.utils.data import Dataset
 # Where the MNI-registered volumes live.  ADNI is not redistributable, so these
 # point at your own copy; override with the environment variables.
 _D = os.path.dirname(os.path.abspath(__file__))
-B    = os.environ.get("ADNI_ROOT", "/ix/lzhan/siyuan/datasets/processed_datas/ADNI_CycleFlow")
+B    = os.environ.get("ADNI_ROOT", "datasets/ADNI")
 T1D  = os.environ.get("ADNI_T1_DIR", f"{B}/registrated_T1_sy")
 FAD  = os.environ.get("ADNI_FA_DIR", f"{B}/registrated_DTI_2mm_sy")
 CACHE      = os.environ.get("ADNI_CACHE",  os.path.join(B, "paired_112.pt"))

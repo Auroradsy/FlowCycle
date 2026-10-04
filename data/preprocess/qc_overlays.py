@@ -11,7 +11,7 @@ from nilearn.image import resample_to_img
 B = os.environ["ADNI_RAW_ROOT"]
 TDIR = f"{B}/registrated_T1_sy"
 MNI2 = os.path.join(os.environ.get("FSLDIR", "/usr/local/fsl"), "data/standard/MNI152_T1_2mm.nii.gz")
-OVR = os.environ.get("ADNI_QC_OUT", "/ix/lzhan/siyuan/exps/CycleFlow/adni/qc/overlays")
+OVR = os.environ.get("ADNI_QC_OUT", "exps/adni/qc/overlays")
 
 rows = list(csv.DictReader(open(f"{TDIR}/manifest.csv")))
 rows = [r for r in rows if r["status"] == "ok"]

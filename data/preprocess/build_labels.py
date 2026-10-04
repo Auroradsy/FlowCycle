@@ -13,7 +13,7 @@ import json, csv, collections, os
 
 SRC = os.environ["ADNI_LABEL_SOURCE"]
 OUR = os.path.join(os.environ["ADNI_RAW_ROOT"], "registrated_T1_sy", "manifest.csv")
-OUT = os.environ.get("ADNI_LABELS", "/ix/lzhan/siyuan/datasets/processed_datas/ADNI_CycleFlow/labels.csv")
+OUT = os.environ.get("ADNI_LABELS", "datasets/ADNI/labels.csv")
 
 LABEL_RE = "The subject is "
 MAP_6 = {"CN":"CN","SMC":"SMC","EMCI":"EMCI","MCI":"MCI","LMCI":"LMCI","AD":"AD"}

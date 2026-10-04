@@ -1,4 +1,4 @@
-# Python 3.11; CUDA torch/torchvision reused by setup_env.sh from baselines_ultra.
+# Python 3.11, CUDA build of PyTorch.
 torch==2.5.1
 torchvision==0.20.1
 numpy>=2,<2.3

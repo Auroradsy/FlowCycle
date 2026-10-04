@@ -167,7 +167,7 @@ def balanced_indices(labels, per_class, offset=0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mnist_raw", default=os.path.normpath(_DEFAULT_MNIST))
-    ap.add_argument("--out", default="/ix/lzhan/siyuan/datasets/processed_datas/MNIST_CycleFlow/mnist_petct")
+    ap.add_argument("--out", default="datasets/mnist_petct")
     ap.add_argument("--size", type=int, default=64,
                     help="output resolution; the pipeline always runs at 28")
     ap.add_argument("--n_train", type=int, default=12000,

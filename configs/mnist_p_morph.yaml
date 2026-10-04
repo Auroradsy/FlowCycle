@@ -1,26 +1,13 @@
-# FlowCycle on MNIST-PET/CT, PAIRED — variant "morph"
-#
-# Full objective, including path supervision of the flow's intermediate frames.
-#
-# This is the ADNI protocol run on synthetic data: L_cross is active at weight
-# 10, quality is SSIM/PSNR against ground truth, and stage 2 rides on L_cross
-# exactly as it does on T1/FA.  It is the direct counterpart of
-# configs/mnist_morph.yaml, which is the same variant on the same rendering
-# pipeline with the pairing withheld -- so the pair of runs isolates what the
-# cross-path supervision is worth, on data where everything else is identical.
-#
-# The training split here gives trainB the SAME MNIST indices as trainA
-# (data/make_mnist_petct.py --paired_train); the unpaired build draws disjoint
-# ones.  Test sets are identical between the two, so the numbers compare.
-#
+# FlowCycle on paired synthetic MNIST MRI/PET -- with trajectory regularization (see README for the flags)
 #   python train.py --config configs/mnist_p_morph.yaml
+# Command-line flags override the values here.
 variant: morph
 tag: mnist_p_morph
 
 # data ---------------------------------------------------------------------
 data: folder
 pair: true                # A[i] and B[i] are the same sample; asserted at load
-data_root: /ix/lzhan/siyuan/datasets/processed_datas/MNIST_CycleFlow/mnist_petct_paired
+data_root: datasets/mnist_petct_paired
 img_ch: 3
 load_size: 72             # resize, then random-crop to 64 -- the SAME crop and
 crop_size: 64             # flip are applied to both members of a pair

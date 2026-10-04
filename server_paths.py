@@ -9,8 +9,8 @@ import subprocess
 import sys
 import uuid
 
-DATA_ROOT = Path(os.environ.get('CYCLEFLOW_DATA_ROOT', '/ix/lzhan/siyuan/datasets/processed_datas'))
-EXPS_ROOT = Path(os.environ.get('FLOWCYCLE_EXPS', '/ix/lzhan/siyuan/exps/CycleFlow'))
+DATA_ROOT = Path(os.environ.get('CYCLEFLOW_DATA_ROOT', 'datasets'))
+EXPS_ROOT = Path(os.environ.get('FLOWCYCLE_EXPS', 'exps'))
 os.environ.setdefault('TORCH_HOME', str(EXPS_ROOT / '_cache' / 'torch'))
 os.environ.setdefault('MPLCONFIGDIR', str(EXPS_ROOT / '_cache' / 'matplotlib'))
 _RUN = None
