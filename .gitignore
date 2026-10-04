@@ -8,7 +8,6 @@ inpaper_utils/
 baselines/
 tests/
 configs/h2z_*.yaml
-configs/p2p_base.yaml
 configs/run_h2z_s3.sh
 configs/make_figures.sh
 configs/check_init.sh

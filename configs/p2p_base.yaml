@@ -1,0 +1,53 @@
+# FlowCycle on pix2pix's paired maps / cityscapes (256x256 RGB) — variant "base"
+#
+# The MNIST-PET/CT protocol (configs/mnist_p_base.yaml: paired, L_cross at weight
+# 10 as the spine of stage 2) at 256x256: load 286 -> crop 256, 9 residual
+# blocks, batch 8.
+# data_root, tag and warm come from the command line (see README, Cityscapes).
+#
+# The trajectory-regularized run resumes the SAME stage-2 checkpoint with
+#   --variant morph --w_latcyc 2.0 --w_path_gan 0 --w_path_smooth 1.0
+# which is the ADNI recipe, untuned here. S1/S2 are the same objective
+# for both variants (L_lat enters only in S3 while s2_cyc = 0), so sharing them makes
+# stage 3 the only difference between the two rows.
+variant: base
+
+# data ---------------------------------------------------------------------
+data: folder
+pair: true                # A[i] and B[i] are the two halves of one pix2pix image
+img_ch: 3
+load_size: 286            # resize, then random-crop to 256 -- the SAME crop and
+crop_size: 256            # flip for both members of a pair
+eval_batch: 16
+seed: 42
+workers: 12
+
+# schedule -----------------------------------------------------------------
+e1: 120
+p1: 20
+e2: 80
+p2: 15
+e3: 120
+p3: 20
+batch: 8
+lr: 2.0e-4
+lr_flow: 1.0e-4
+clip: 5.0
+
+# architecture -------------------------------------------------------------
+ngf: 64
+ndf: 64
+n_blocks: 9
+n_flow: 4
+flow_hidden: 128
+pre_relu: 1
+
+# loss weights -------------------------------------------------------------
+w_self: 10.0
+w_cross: 10.0             # PAIRED
+w_gan: 1.0
+w_cyc: 10.0
+w_latcyc: 0.0
+w_path_gan: 0.0
+w_path_smooth: 0.0
+s2_cyc: 0                 # L_cross already gives stage 2 an objective
