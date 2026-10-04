@@ -4,7 +4,7 @@
 
 Why this dataset exists
 -----------------------
-horse2zebra answered "does MMCLAST-cg survive without pairing", but it could
+horse2zebra answered "does FlowCycle survive without pairing", but it could
 not answer "is the translation any GOOD", because unpaired data admits no SSIM
 against ground truth.  All we had was FID (set-level, needs calibration) and
 cycle SSIM (which an identity map wins).  That ambiguity is what left the

@@ -1,52 +1,26 @@
-# --- data ------------------------------------------------------------------
-# ADNI is distributed under a Data Use Agreement that does not permit
-# redistribution.  Neither the imaging cache nor the subject-level label table
-# belongs in a public repository.
-#
-# NOTE: this ignores data/cache and data/labels.csv only.  `data/` itself is a
-# source package now (paired_dataset.py, build_cache.py, preprocess/) and must
-# stay tracked.
-data/cache
-data/labels.csv
-*.nii
-*.nii.gz
-
-# --- run outputs -----------------------------------------------------------
-# Everything a run produces lives under exps/ — weights, per-epoch logs, and
-# the figures.  All reproducible from configs/ given the data.
-exps/
-paper_writing/
-*.pth
+# data (ADNI may not be redistributed)
 *.pt
-*.ckpt
-*.npy
-*.npz
 
-# --- not part of the release ----------------------------------------------
-# (gitignore has NO inline comments — a trailing "# ..." becomes part of the
-#  pattern and silently matches nothing.  Keep comments on their own lines.)
-# the exploration archive: vanilla CLAST, the five baselines, old ADNI runs
-__outdated_files/
-# working notes
+# local only, not part of the release
 __X_files/
-# the paper and its LaTeX intermediates
-paper_writing/
-exps/
 snapshot_results/
-pytorch-CycleGAN-and-pix2pix/
-SERVER_SETUP.md
-
-# --- python ----------------------------------------------------------------
-__pycache__/
-*.py[cod]
-.ipynb_checkpoints/
-.venv/
-
-# --- junk ------------------------------------------------------------------
-__MACOSX/
-*.zip
-.DS_Store
-
-# not part of the release
 inpaper_utils/
+baselines/
+tests/
+configs/h2z_*.yaml
+configs/p2p_base.yaml
+configs/run_h2z_s3.sh
+configs/make_figures.sh
+configs/check_init.sh
+configs/setup_env.sh
+configs/verify_server.py
+utils/plot_*.py
+utils/make_figures_*.py
+utils/eval_h2z_ssim.py
+
+# python
+__pycache__/
+
+# editor
 .vscode/
+.claude/

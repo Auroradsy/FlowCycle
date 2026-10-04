@@ -1,4 +1,4 @@
-# MMCLAST-cg — variant "base"
+# FlowCycle — variant "base"
 # Rewiring only. No L_latcyc, no L_path, no D_mix. Best cross-SSIM of the three; its morph changes the T1 view instead of the FA view (tearing).
 #
 #   python train.py --config configs/base.yaml

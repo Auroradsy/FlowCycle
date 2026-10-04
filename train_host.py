@@ -39,7 +39,7 @@ from data.paired_dataset import (
 from model import ResnetGenerator, PatchDiscriminator, init_weights
 
 # The host's weights are what train.py splits into E/D, so they live beside the
-# MMCLAST-cg runs.  HOST_TAG picks the sub-directory (default: the mid-10 host).
+# FlowCycle runs.  HOST_TAG picks the sub-directory (default: the mid-10 host).
 from server_paths import experiment_root, checkpoint_root
 EXPS = experiment_root()
 RESULTS = os.path.join(EXPS, "checkpoints", os.environ.get("HOST_TAG", "host"))
@@ -189,7 +189,7 @@ def main():
     D_T1 = init_weights(PatchDiscriminator(C, args.ndf)).to(device)  # judges T1-domain
 
     # Keep handles on the RAW modules before any wrapping.  Checkpoints must
-    # store unwrapped state dicts: every consumer downstream (MMCLASTcg.
+    # store unwrapped state dicts: every consumer downstream (FlowCycle.
     # load_cyclegan, utils.eval_mnist, utils.make_figures_folder) does a
     # strict=True load into a plain ResnetGenerator, and a "module." prefix
     # from DataParallel would break all of them.

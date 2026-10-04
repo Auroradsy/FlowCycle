@@ -36,7 +36,7 @@ if _HERE not in sys.path:
 
 from data.paired_dataset import (                                        # noqa: E402
     build_cache, PairedADNISliceDataset, subject_level_split, CACHE)
-from model import MMCLASTcg                                              # noqa: E402
+from model import FlowCycle                                              # noqa: E402
 from utils.image import to_pm1, to_01, ssim_batch                        # noqa: E402
 
 DEV = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -76,7 +76,7 @@ def main():
 
     ck = torch.load(os.path.join(CKPT, a.tag, "model.pth"), map_location=DEV)
     cfg = ck["args"]
-    m = MMCLASTcg(cfg["ngf"], cfg["n_blocks"], cfg["n_flow"], cfg["flow_hidden"],
+    m = FlowCycle(cfg["ngf"], cfg["n_blocks"], cfg["n_flow"], cfg["flow_hidden"],
                   bool(cfg["pre_relu"])).to(DEV)
     m.load_state_dict(ck["model"]); m.eval()
 

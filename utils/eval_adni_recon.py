@@ -31,7 +31,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from data import build_cache, PairedADNISliceDataset, subject_level_split      # noqa: E402
-from model import MMCLASTcg                                                    # noqa: E402
+from model import FlowCycle                                                    # noqa: E402
 from model.backbone import ResnetGenerator                                     # noqa: E402
 from utils.image import to_pm1, to_01                                          # noqa: E402
 
@@ -118,7 +118,7 @@ def main():
     for t in tags:
         c = torch.load(os.path.join(CKPT, t, "model.pth"), map_location=DEV)
         ar = c["args"]
-        m = MMCLASTcg(ar["ngf"], ar["n_blocks"], ar["n_flow"], ar["flow_hidden"],
+        m = FlowCycle(ar["ngf"], ar["n_blocks"], ar["n_flow"], ar["flow_hidden"],
                       bool(ar["pre_relu"]), img_ch=ar.get("img_ch", 1)).to(DEV)
         m.load_state_dict(c["model"]); m.eval()
         res[t] = score(m.cross_A2B, m.cross_B2A, dl)

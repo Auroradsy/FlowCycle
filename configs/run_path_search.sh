@@ -12,7 +12,7 @@
 #           two-opposite-targets conflict that collapsed morph_bi_s3ctl.
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/_env.sh"
-FROM="${FROM:-$MMCLAST_EXPS/adni/checkpoints/morph/stage2.pth}"
+FROM="${FROM:-$FLOWCYCLE_EXPS/adni/checkpoints/morph/stage2.pth}"
 
 arm () {  # arm <gpu> <tag> <config> <extra...>
   local gpu="$1" tag="$2" cfg="$3"; shift 3
@@ -24,4 +24,4 @@ arm 0 morph_smooth   morph    --w_path_gan 0 --w_path_smooth 1.0 &
 arm 0 morph_ra       morph    --path_gan_mode ra &
 arm 1 morph_bi_sep   morph_bi --path_critics separate &
 wait
-echo "done -> $MMCLAST_EXPS/adni/checkpoints/{morph_smooth,morph_ra,morph_bi_sep}"
+echo "done -> $FLOWCYCLE_EXPS/adni/checkpoints/{morph_smooth,morph_ra,morph_bi_sep}"

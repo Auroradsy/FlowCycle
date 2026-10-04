@@ -1,4 +1,4 @@
-# MMCLAST-cg on MNIST-PET/CT — variant "base", S2 EARLY STOP DISABLED
+# FlowCycle on MNIST-PET/CT — variant "base", S2 EARLY STOP DISABLED
 #
 # The control for whether mnist_base's S2 stop at ep20 was real or premature.
 # Identical to mnist_base except p2 = e2, so S2 runs all 60 epochs.
@@ -12,7 +12,7 @@
 # almost certainly having a large latcyc residual too, so a small residual is
 # not established as necessary for a good endpoint.
 #
-# MMCLAST-cg on MNIST-PET/CT — variant "base"
+# FlowCycle on MNIST-PET/CT — variant "base"
 #
 # Rewiring only. The arm the headline claim rests on.
 #

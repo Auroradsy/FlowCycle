@@ -221,7 +221,7 @@ CycleFlow/
 ├── model/
 │   ├── backbone.py         ResnetGenerator, PatchDiscriminator, init_weights
 │   ├── flow.py             SpatialActNorm, SpatialCoupling, SpatialFlow
-│   └── mmclast.py          Encoder, Decoder, MMCLASTcg, make_discriminators
+│   └── flowcycle.py          Encoder, Decoder, FlowCycle, make_discriminators
 │
 ├── utils/
 │   ├── image.py            to_pm1 / to_01 / ssim — the shared conventions
@@ -232,7 +232,7 @@ CycleFlow/
 │
 └── exps/                   ALL run output.  gitignored in full — nothing here
     │                       ships with the repo; regenerate it from configs/.
-    │                       Relocate the whole tree with $MMCLAST_EXPS.
+    │                       Relocate the whole tree with $FLOWCYCLE_EXPS.
     ├── checkpoints/<tag>/  weights, final_eval.txt, probe_eval.txt
     │   └── host/           the CycleGAN checkpoint train.py splits
     ├── logs/<tag>/         train_log.csv (per epoch) + train.log (stdout)

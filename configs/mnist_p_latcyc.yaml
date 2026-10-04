@@ -1,4 +1,4 @@
-# MMCLAST-cg on MNIST-PET/CT, PAIRED — variant "latcyc"
+# FlowCycle on MNIST-PET/CT, PAIRED — variant "latcyc"
 #
 # Rewiring + latent cycle.
 #

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""MMCLAST-cg — three-stage training of the rewired CycleGAN (no GMM).
+"""FlowCycle — three-stage training of the rewired CycleGAN (no GMM).
 
     S1  two INDEPENDENT autoencoders (+ self-GAN).   train E,D    f frozen = id
     S2  the bijection only.                          train f      E,D frozen
@@ -55,14 +55,14 @@ if _HERE not in sys.path:
 
 from data.paired_dataset import (                                        # noqa: E402
     build_cache, PairedADNISliceDataset, subject_level_split, CACHE)
-from model import MMCLASTcg, make_discriminators                         # noqa: E402
+from model import FlowCycle, make_discriminators                         # noqa: E402
 from utils.image import to_pm1, to_01                                    # noqa: E402
 from utils.pool import ImagePool                                         # noqa: E402
 from utils.config import parse_with_config                               # noqa: E402
 
 DEV = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Everything a run produces lives under exps/ (gitignored).  Override the whole
-# tree with MMCLAST_EXPS to keep several experiment sets side by side.
+# tree with FLOWCYCLE_EXPS to keep several experiment sets side by side.
 from server_paths import experiment_root, checkpoint_root
 EXPS = experiment_root()
 CKPT = os.path.join(EXPS, "checkpoints")
@@ -221,7 +221,7 @@ def val_monitor(m, loader, stage, w_latcyc, paired=True):
 # ---------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser(
-        description="MMCLAST-cg three-stage trainer.  See configs/ for ready-made runs.")
+        description="FlowCycle three-stage trainer.  See configs/ for ready-made runs.")
     ap.add_argument("--config", default=None,
                     help="YAML of hyperparameters; command-line flags still win")
     ap.add_argument("--variant", choices=["base", "latcyc", "morph", "morph_bi"],
@@ -255,6 +255,9 @@ def main():
     ap.add_argument("--n_flow", type=int, default=4)
     ap.add_argument("--flow_hidden", type=int, default=128)
     ap.add_argument("--pre_relu", type=int, default=1)
+    ap.add_argument("--shared_dec", type=int, default=0,
+                    help="1 = ONE decoder for both modalities (dec_B is dec_A); "
+                         "incompatible with --warm, which carries a decoder per direction")
     # loss weights
     ap.add_argument("--w_self", type=float, default=10.0)
     ap.add_argument("--w_cross", type=float, default=10.0)
@@ -312,6 +315,12 @@ def main():
         a.warm = resolve_checkpoint(a.warm)
         if not os.path.isabs(a.warm):
             a.warm = os.path.join(_HERE, a.warm)
+
+    # --warm has a default path, so a shared-decoder run that forgot to clear it would
+    # warm-start into the overwrite load_cyclegan refuses. Say so before anything loads.
+    if a.shared_dec and a.warm:
+        raise SystemExit("--shared_dec needs --warm '' : one decoder cannot be initialised "
+                         "from a CycleGAN host, which has one per direction")
 
     if a.variant == "base":
         a.w_latcyc = 0.0; a.w_path_gan = 0.0; a.w_path_smooth = 0.0; a.path_bidir = 0
@@ -371,7 +380,7 @@ def main():
 
     # --- init check: does the split + f=id reproduce plain CycleGAN? ------
     if a.check_init:
-        mm = MMCLASTcg(a.ngf, a.n_blocks, a.n_flow, a.flow_hidden, pre_relu=False,
+        mm = FlowCycle(a.ngf, a.n_blocks, a.n_flow, a.flow_hidden, pre_relu=False,
                        img_ch=a.img_ch).to(DEV)
         mm.load_cyclegan(a.warm, map_location=DEV)
         r = evaluate(mm, el, paired=paired)
@@ -409,8 +418,10 @@ def main():
         return
 
     # --- model ------------------------------------------------------------
-    m = MMCLASTcg(a.ngf, a.n_blocks, a.n_flow, a.flow_hidden, bool(a.pre_relu),
-                  img_ch=a.img_ch).to(DEV)
+    m = FlowCycle(a.ngf, a.n_blocks, a.n_flow, a.flow_hidden, bool(a.pre_relu),
+                  img_ch=a.img_ch, shared_dec=bool(a.shared_dec)).to(DEV)
+    if a.shared_dec:
+        print("shared decoder: dec_B IS dec_A, one decoder for both modalities", flush=True)
     if a.warm and os.path.exists(a.warm):
         ep = m.load_cyclegan(a.warm, map_location=DEV)
         print(f"warm start from {a.warm} (host epoch {ep})", flush=True)
@@ -441,14 +452,24 @@ def main():
               f"discriminators: {'restored ' + ','.join(have_d) if have_d else 'FRESH (not in checkpoint)'}",
               flush=True)
 
-    n_host = sum(p.numel() for mod in (m.enc_A, m.enc_B, m.dec_A, m.dec_B)
-                 for p in mod.parameters())
+    # with a shared decoder dec_A IS dec_B, so both the count and the optimizer group
+    # must see each tensor once: Adam would otherwise take two steps per update on the
+    # decoder, and the printed size would be a decoder too large.
+    def uniq(mods):
+        seen, out = set(), []
+        for mod in mods:
+            for p in mod.parameters():
+                if id(p) not in seen:
+                    seen.add(id(p)); out.append(p)
+        return out
+
+    host_params = uniq((m.enc_A, m.enc_B, m.dec_A, m.dec_B))
+    n_host = sum(p.numel() for p in host_params)
     print(f"params: host {n_host/1e6:.2f} M + flow {sum(p.numel() for p in m.flow.parameters())/1e6:.2f} M",
           flush=True)
 
     opt_G = torch.optim.Adam([
-        {"params": itertools.chain(m.enc_A.parameters(), m.enc_B.parameters(),
-                                   m.dec_A.parameters(), m.dec_B.parameters()), "lr": a.lr},
+        {"params": host_params, "lr": a.lr},
         {"params": m.flow.parameters(), "lr": a.lr_flow}], betas=(0.5, 0.999))
     opt_D = torch.optim.Adam(itertools.chain(*[D[k].parameters() for k in D]),
                              lr=a.lr, betas=(0.5, 0.999))
@@ -738,7 +759,7 @@ def main():
                f"shuffle_delta={r['shuf_delta']:.4f}\n"
                f"flow_work={r['flow_work']:.4f}\nlatent_gap={r['latent_gap']:.4f}\n")
         open(os.path.join(RESULTS, "final_eval.txt"), "w").write(txt)
-        print(f"\n[MMCLAST-cg/{a.variant}] FINAL  ({R})")
+        print(f"\n[FlowCycle/{a.variant}] FINAL  ({R})")
         print(f"  self   A {r['self_T1']:.4f}   B {r['self_FA']:.4f}")
         print(f"  FID    A→B {f_ab:.2f}   B→A {f_ba:.2f}")
         print(f"  FID path vs A∪B: " + "  ".join(f"{v:.1f}" for v in path_fid))
@@ -756,7 +777,7 @@ def main():
            f"shuffle_floor_FA={r['ref_FA']:.4f}\nshuffle_floor_T1={r['ref_T1']:.4f}\n"
            f"flow_work={r['flow_work']:.4f}\nlatent_gap={r['latent_gap']:.4f}\n")
     open(os.path.join(RESULTS, "final_eval.txt"), "w").write(txt)
-    print(f"\n[MMCLAST-cg/{a.variant}] FINAL")
+    print(f"\n[FlowCycle/{a.variant}] FINAL")
     print(f"  self   T1 {r['self_T1']:.4f}   FA {r['self_FA']:.4f}")
     print(f"  cross  T1→FA {r['T1toFA']:.4f}{'✓' if r['T1toFA']>CFM_T1FA else '✗'}   "
           f"FA→T1 {r['FAtoT1']:.4f}{'✓' if r['FAtoT1']>CFM_FAT1 else '✗'}  (vs CFM {CFM_T1FA}/{CFM_FAT1})")

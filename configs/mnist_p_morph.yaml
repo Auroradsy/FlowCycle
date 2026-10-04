@@ -1,4 +1,4 @@
-# MMCLAST-cg on MNIST-PET/CT, PAIRED — variant "morph"
+# FlowCycle on MNIST-PET/CT, PAIRED — variant "morph"
 #
 # Full objective, including path supervision of the flow's intermediate frames.
 #

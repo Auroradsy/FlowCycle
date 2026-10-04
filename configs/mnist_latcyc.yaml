@@ -1,4 +1,4 @@
-# MMCLAST-cg on MNIST-PET/CT — variant "latcyc"
+# FlowCycle on MNIST-PET/CT — variant "latcyc"
 #
 # Rewiring + latent cycle. Round 1: does the split survive on a dataset where one domain carries information the other does not?
 #

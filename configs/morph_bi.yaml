@@ -1,4 +1,4 @@
-# MMCLAST-cg — variant "morph_bi"
+# FlowCycle — variant "morph_bi"
 # Same as morph, but L_path also walks f BACKWARDS (B->A, read with D_A).
 #
 #   python train.py --config configs/morph_bi.yaml

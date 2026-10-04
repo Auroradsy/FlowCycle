@@ -9,8 +9,8 @@ vector flow would need.  Two properties the rest of the model depends on:
   * `f` is the EXACT identity at initialisation.  SpatialActNorm starts at
     log_scale = bias = 0, and SpatialCoupling's last conv is zero-init, so
     f(z) = z and f^-1(u) = u to machine precision.  This is what lets a
-    warm-started MMCLAST-cg reproduce its plain-CycleGAN host bit-for-bit
-    (train_mmclast.py --check_init).
+    warm-started FlowCycle reproduce its plain-CycleGAN host bit-for-bit
+    (train.py --check_init).
   * `f^-1(f(z)) = z` holds by construction rather than being penalised into
     place, so the two cross directions are one set of weights, not two.
 

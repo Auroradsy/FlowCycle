@@ -1,4 +1,4 @@
-# MMCLAST-cg — variant "latcyc"
+# FlowCycle — variant "latcyc"
 # + L_latcyc. Stops the tearing, but nothing moves along the path either.
 #
 #   python train.py --config configs/latcyc.yaml

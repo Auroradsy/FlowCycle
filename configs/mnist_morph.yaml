@@ -1,4 +1,4 @@
-# MMCLAST-cg on MNIST-PET/CT — variant "morph"  (round 2, the S3 ablation)
+# FlowCycle on MNIST-PET/CT — variant "morph"  (round 2, the S3 ablation)
 #
 # Path supervision.  Driven by run_mnist_s3.sh, which overrides
 # --path_gan_mode and --w_path_gan per arm and resumes ALL arms from one shared

@@ -16,10 +16,10 @@
 # run BOTH mnist_base and mnist_latcyc first, then point FROM at whichever S2
 # scored better, and record which was used.
 #
-#   FROM=$MMCLAST_EXPS/mnist/checkpoints/mnist_latcyc/stage2.pth bash configs/run_mnist_s3.sh
+#   FROM=$FLOWCYCLE_EXPS/mnist/checkpoints/mnist_latcyc/stage2.pth bash configs/run_mnist_s3.sh
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/_env.sh"
-FROM="${FROM:-$MMCLAST_EXPS/mnist/checkpoints/mnist_latcyc/stage2.pth}"
+FROM="${FROM:-$FLOWCYCLE_EXPS/mnist/checkpoints/mnist_latcyc/stage2.pth}"
 GPUS="${GPUS:-0 1}"
 
 if [ ! -f "$FROM" ]; then
@@ -46,4 +46,4 @@ P1=$!
 ( arm "$B" mnist_morph_abs ) &
 P2=$!
 wait $P1 $P2
-echo "done -> $MMCLAST_EXPS/mnist/checkpoints/{mnist_morph_abs,mnist_morph_ra,mnist_morph_smooth}"
+echo "done -> $FLOWCYCLE_EXPS/mnist/checkpoints/{mnist_morph_abs,mnist_morph_ra,mnist_morph_smooth}"

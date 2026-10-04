@@ -16,11 +16,11 @@
 # Sharing one S1+S2 is what removes that variable.
 #
 #   bash configs/run_s3_ablation.sh                    # both arms, one GPU
-#   FROM=$MMCLAST_EXPS/adni/checkpoints/morph/stage2.pth bash configs/run_s3_ablation.sh
+#   FROM=$FLOWCYCLE_EXPS/adni/checkpoints/morph/stage2.pth bash configs/run_s3_ablation.sh
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/_env.sh"
 
-FROM="${FROM:-$MMCLAST_EXPS/adni/checkpoints/morph/stage2.pth}"
+FROM="${FROM:-$FLOWCYCLE_EXPS/adni/checkpoints/morph/stage2.pth}"
 [ -f "$FROM" ] || { echo "no stage-2 checkpoint at $FROM"; exit 1; }
 
 arm () {                    # arm <tag> <config>
@@ -34,4 +34,4 @@ echo "resuming both arms from $FROM on GPU ${CUDA_VISIBLE_DEVICES:-scheduler/def
 arm morph_s3ctl    morph    &      # path_bidir = 0
 arm morph_bi_s3ctl morph_bi &      # path_bidir = 1
 wait
-echo "both arms done -> $MMCLAST_EXPS/adni/checkpoints/{morph_s3ctl,morph_bi_s3ctl}"
+echo "both arms done -> $FLOWCYCLE_EXPS/adni/checkpoints/{morph_s3ctl,morph_bi_s3ctl}"

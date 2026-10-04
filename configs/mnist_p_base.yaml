@@ -1,4 +1,4 @@
-# MMCLAST-cg on MNIST-PET/CT, PAIRED — variant "base"
+# FlowCycle on MNIST-PET/CT, PAIRED — variant "base"
 #
 # Rewiring only: no L_latcyc, no path terms. The arm the headline claim rests on.
 #

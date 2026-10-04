@@ -1,4 +1,4 @@
-# MMCLAST-cg — variant "morph"
+# FlowCycle — variant "morph"
 # + L_latcyc + L_path (and a third discriminator D_mix, real = T1 u FA pooled). The usable morph.
 #
 #   python train.py --config configs/morph.yaml

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""MMCLAST-cg — CycleGAN rewired so that a single dense flow IS the bridge.
+"""FlowCycle — CycleGAN rewired so that a single dense flow IS the bridge.
 
 An earlier attempt tapped a 16-D vector off the bottleneck and
 re-injected it by FiLM.  A16 killed it: `feat` (256x28x28) still reached the
@@ -26,7 +26,7 @@ Three properties this buys, all of them checkable:
   2. `f` is the EXACT identity at init (SpatialActNorm log_scale=bias=0,
      SpatialCoupling last conv zero-init), so a freshly warm-started model
      reproduces plain CycleGAN bit-for-bit on both cross directions.  See
-     `MMCLASTcg.load_cyclegan` + train.py --check_init.
+     `FlowCycle.load_cyclegan` + train.py --check_init.
   3. No bypass.  D_B only ever sees E_B(FA) or f(E_A(T1)); there is no spatial
      path around the flow, so u-shuffle must destroy the output by construction.
 
@@ -78,18 +78,23 @@ class Decoder(nn.Module):
 # ---------------------------------------------------------------------------
 # the model
 # ---------------------------------------------------------------------------
-class MMCLASTcg(nn.Module):
+class FlowCycle(nn.Module):
     """Two encoder/decoder pairs from CycleGAN, bridged by ONE dense conv flow."""
 
     def __init__(self, ngf=64, n_blocks=6, n_flow=4, flow_hidden=128, pre_relu=True,
-                 img_ch=1):
+                 img_ch=1, shared_dec=False):
         super().__init__()
         ch = ngf * 4
         self.img_ch = img_ch
+        self.shared_dec = bool(shared_dec)
         self.enc_A = init_weights(Encoder(img_ch, ngf, pre_relu))
         self.enc_B = init_weights(Encoder(img_ch, ngf, pre_relu))
         self.dec_A = init_weights(Decoder(img_ch, ngf, n_blocks))
-        self.dec_B = init_weights(Decoder(img_ch, ngf, n_blocks))
+        # shared_dec: ONE decoder for both modalities. dec_B is dec_A, so every path
+        # that names either of them is unchanged, but the state dict carries the same
+        # tensors under both prefixes and a reader that rebuilds two decoders from it
+        # gets two identical copies, i.e. the same function.
+        self.dec_B = self.dec_A if self.shared_dec else init_weights(Decoder(img_ch, ngf, n_blocks))
         # NOTE: init_weights must NOT touch the flow — it would overwrite the
         # zero-init that makes f the exact identity at step 0.
         self.flow = SpatialFlow(n_flow, ch, flow_hidden)
@@ -139,6 +144,10 @@ class MMCLASTcg(nn.Module):
         E_A + D_B are the two halves of G_T1toFA, E_B + D_A of G_FAtoT1, so with
         f still at its identity init the cross paths reproduce the host exactly.
         """
+        if self.shared_dec:
+            raise RuntimeError('a shared decoder cannot be warm-started from a CycleGAN: '
+                               'the host has one decoder per direction and the second load '
+                               'would silently overwrite the first')
         ck = torch.load(path, map_location=map_location)
         A2B, B2A = ck["G_T1toFA"], ck["G_FAtoT1"]
 
@@ -189,7 +198,7 @@ def make_discriminators(ndf=64, mix=False, mix_b=False, img_ch=1):
 
 
 if __name__ == "__main__":
-    m = MMCLASTcg()
+    m = FlowCycle()
     n = lambda mod: sum(p.numel() for p in mod.parameters())
     host = n(m.enc_A) + n(m.enc_B) + n(m.dec_A) + n(m.dec_B)
     print(f"host (= 2 x ResnetGenerator): {host/1e6:.2f} M")

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Convert an official-layout CycleGAN generator pair into the host format.
 
-`MMCLASTcg.load_cyclegan` wants a single file holding
+`FlowCycle.load_cyclegan` wants a single file holding
 
     {"G_T1toFA": <state_dict>, "G_FAtoT1": <state_dict>, "epoch": ...}
 
