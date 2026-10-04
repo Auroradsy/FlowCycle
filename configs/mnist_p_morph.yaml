@@ -16,7 +16,7 @@ eval_batch: 64
 seed: 42
 workers: 6
 
-warm: exps/checkpoints/mnist_host/last.pth
+warm: exps/checkpoints/mnist_cyclegan/last.pth
 
 # schedule -----------------------------------------------------------------
 # Same as the unpaired MNIST runs, so the two differ only in the supervision.

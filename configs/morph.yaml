@@ -13,8 +13,8 @@ workers: 4
 
 # warm start ---------------------------------------------------------------
 # The plain-CycleGAN checkpoint that gets split into E_A/D_B and E_B/D_A.
-# Set to "" to train the host from scratch inside stage 1 instead.
-warm: exps/checkpoints/host/last.pth
+# Set to "" to train the CycleGAN from scratch inside stage 1 instead.
+warm: exps/checkpoints/cyclegan/last.pth
 
 # schedule: epochs and early-stopping patience per stage --------------------
 e1: 120                   # S1  two independent autoencoders   (f frozen = id)
@@ -31,7 +31,7 @@ clip: 5.0
 # architecture -------------------------------------------------------------
 ngf: 64
 ndf: 64
-n_blocks: 6               # residual blocks per decoder (host default)
+n_blocks: 6               # residual blocks per decoder (CycleGAN default)
 n_flow: 4                 # flow blocks — also the number of morph frames
 flow_hidden: 128
 pre_relu: 1               # tap the bottleneck BEFORE down's last ReLU.

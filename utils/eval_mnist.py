@@ -30,7 +30,7 @@ cannot be over-read (the same discipline the h2z FID calibration needed):
                       construction).  A model that ignores class identity lands
                       on the floor no matter how good its SSIM is.
 
-    python -m utils.eval_mnist                 # host + every finished mnist_* arm
+    python -m utils.eval_mnist                 # CycleGAN + every finished mnist_* arm
     python -m utils.eval_mnist --tags mnist_base
 """
 import argparse
@@ -164,7 +164,7 @@ def references(dl):
     return r, float(np.mean(hot_floor))
 
 
-def _host_n_blocks(ck, default):
+def _cyclegan_n_blocks(ck, default):
     """n_blocks lives in ck["args"], not at the top level.  ck.get("n_blocks", D)
     therefore always returned D silently -- correct only when D happened to
     match the run.  Read the real value and fall back only if it is absent."""
@@ -175,7 +175,7 @@ def _host_n_blocks(ck, default):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default="datasets/mnist_petct_paired")
-    ap.add_argument("--warm", default=os.path.join(CKPT, "mnist_host", "last.pth"))
+    ap.add_argument("--warm", default=os.path.join(CKPT, "mnist_cyclegan", "last.pth"))
     ap.add_argument("--tags", nargs="*", default=None)
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--limit", type=int, default=0, help="0 = all test pairs")
@@ -201,16 +201,16 @@ def main():
         ck = torch.load(a.warm, map_location=DEV)
         gs = {}
         for key, name in [("G_T1toFA", "a2b"), ("G_FAtoT1", "b2a")]:
-            g = ResnetGenerator(3, 3, 64, _host_n_blocks(ck, 6)).to(DEV).eval()
+            g = ResnetGenerator(3, 3, 64, _cyclegan_n_blocks(ck, 6)).to(DEV).eval()
             g.load_state_dict(ck[key], strict=True)
             gs[name] = g
-        res["host"] = score(gs["a2b"], gs["b2a"], dl)
+        res["cyclegan"] = score(gs["a2b"], gs["b2a"], dl)
     else:
-        print(f"no host at {a.warm} — skipping")
+        print(f"no CycleGAN checkpoint at {a.warm} — skipping")
 
     tags = a.tags if a.tags is not None else sorted(
         t for t in os.listdir(CKPT)
-        if t.startswith("mnist_") and t != "mnist_host"
+        if t.startswith("mnist_") and t != "mnist_cyclegan"
         and os.path.exists(os.path.join(CKPT, t, "model.pth")))
     for t in tags:
         c = torch.load(os.path.join(CKPT, t, "model.pth"), map_location=DEV)

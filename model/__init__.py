@@ -1,4 +1,4 @@
-"""The rewired CycleGAN: host halves + the shared bijection."""
+"""The rewired CycleGAN: CycleGAN halves + the shared bijection."""
 from .backbone import ResnetGenerator, PatchDiscriminator, init_weights
 from .flow import SpatialFlow, SpatialActNorm, SpatialCoupling
 from .flowcycle import Encoder, Decoder, FlowCycle, make_discriminators

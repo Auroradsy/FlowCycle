@@ -3,7 +3,7 @@
 """Reconstruction metrics (SSIM + PSNR) for the ADNI runs, scored post hoc.
 
 The training script writes SSIM into `final_eval.txt` but not PSNR, and the
-host writes both — so the two are not directly comparable as stored.  This
+CycleGAN writes both — so the two are not directly comparable as stored.  This
 recomputes every number under one protocol, on the same subject-level test
 split the runs used, so a paper table can be built from a single source.
 
@@ -12,7 +12,7 @@ the input unchanged.  On MNI-registered slices that floor is high, and a
 cross-modal SSIM that does not clear it is not measuring anything modality
 -specific.
 
-    python -m utils.eval_adni_recon                 # host + every finished arm
+    python -m utils.eval_adni_recon                 # CycleGAN + every finished arm
     python -m utils.eval_adni_recon --tags morph
 """
 import argparse
@@ -42,7 +42,7 @@ CKPT = os.path.join(EXPS, "checkpoints")
 OUT = os.path.join(EXPS, "snapshot_results")
 
 
-def _host_n_blocks(ck, default):
+def _cyclegan_n_blocks(ck, default):
     a = ck.get("args") or {}
     return int(a.get("n_blocks", ck.get("n_blocks", default)))
 
@@ -84,7 +84,7 @@ def copy_floor(dl):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--warm", default=os.path.join(CKPT, "host", "last.pth"))
+    ap.add_argument("--warm", default=os.path.join(CKPT, "cyclegan", "last.pth"))
     ap.add_argument("--tags", nargs="*", default=None)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--label_scheme", default="label_4")
@@ -102,15 +102,15 @@ def main():
 
     if os.path.exists(a.warm):
         ck = torch.load(a.warm, map_location=DEV)
-        nb = _host_n_blocks(ck, 6)
+        nb = _cyclegan_n_blocks(ck, 6)
         g = {}
         for key, name in [("G_T1toFA", "fwd"), ("G_FAtoT1", "bwd")]:
             n = ResnetGenerator(1, 1, 64, nb).to(DEV).eval()
             n.load_state_dict(ck[key], strict=True)
             g[name] = n
-        res["host"] = score(g["fwd"], g["bwd"], dl)
+        res["cyclegan"] = score(g["fwd"], g["bwd"], dl)
 
-    skip = {"host"}
+    skip = {"cyclegan"}
     tags = a.tags if a.tags is not None else sorted(
         t for t in os.listdir(CKPT)
         if t not in skip and not t.startswith(("h2z_", "mnist_"))

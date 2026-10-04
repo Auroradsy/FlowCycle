@@ -18,7 +18,7 @@ about the decoders instead.
 Losses (all GMM / flow-NLL / KL / pair terms are gone):
     L_self    L1(D_A(z), T1) + L1(D_B(u_B), FA)                        x10
     L_cross   L1(D_B(f z), FA) + L1(D_A(f^-1 u_B), T1)                 x10   <- paired data
-    L_gan     LSGAN, host discriminators                               x1
+    L_gan     LSGAN, CycleGAN discriminators                               x1
     L_cyc     pixel cycle T1->FA->T1                                   x10
     L_latcyc  || E_B(D_B(f z)) - f z ||_1 / || f z ||_1                x1..5
     L_path    LSGAN(D_mix(D_B(s_t))) + || D_B(s_t) - D_B(s_{t-1}) ||_1
@@ -227,7 +227,7 @@ def main():
     ap.add_argument("--variant", choices=["base", "latcyc", "morph", "morph_bi"],
                     default="morph")
     ap.add_argument("--tag", default=None)
-    ap.add_argument("--warm", default=str(checkpoint_root() / "host" / "last.pth"),
+    ap.add_argument("--warm", default=str(checkpoint_root() / "cyclegan" / "last.pth"),
                     help="plain-CycleGAN checkpoint to split into E/D ('' = from scratch)")
     # data
     ap.add_argument("--z_lo", type=int, default=40, help="axial band low, inclusive")
@@ -240,7 +240,7 @@ def main():
     ap.add_argument("--resume_from", default="",
                     help="stage checkpoint to resume from (default: this tag's own)")
     ap.add_argument("--check_init", action="store_true",
-                    help="verify f=id + the E/D split reproduces the host, then exit")
+                    help="verify f=id + the E/D split reproduces the CycleGAN, then exit")
     # schedule
     ap.add_argument("--e1", type=int, default=120); ap.add_argument("--p1", type=int, default=20)
     ap.add_argument("--e2", type=int, default=80);  ap.add_argument("--p2", type=int, default=15)
@@ -320,7 +320,7 @@ def main():
     # warm-start into the overwrite load_cyclegan refuses. Say so before anything loads.
     if a.shared_dec and a.warm:
         raise SystemExit("--shared_dec needs --warm '' : one decoder cannot be initialised "
-                         "from a CycleGAN host, which has one per direction")
+                         "from a CycleGAN, which has one per direction")
 
     if a.variant == "base":
         a.w_latcyc = 0.0; a.w_path_gan = 0.0; a.w_path_smooth = 0.0; a.path_bidir = 0
@@ -386,18 +386,18 @@ def main():
         r = evaluate(mm, el, paired=paired)
         print(f"\n[check_init] pre_relu=0, f=identity")
         if paired:
-            # derive from --warm rather than hard-coding the ADNI host, so a
-            # paired folder run cites its own host (for ADNI this is unchanged)
+            # derive from --warm rather than hard-coding the ADNI CycleGAN, so a
+            # paired folder run cites its own CycleGAN (for ADNI this is unchanged)
             ref = os.path.join(os.path.dirname(a.warm), "final_eval.txt")
             print(f"  T1->FA {r['T1toFA']:.4f}   FA->T1 {r['FAtoT1']:.4f}")
             print(f"  flow_work {r['flow_work']:.2e} (must be ~0)")
             if os.path.exists(ref):
-                print("  host reference:\n   ",
+                print("  CycleGAN reference:\n   ",
                       open(ref).read().replace("\n", "\n    ").strip())
             return
-        # Unpaired: there is no SSIM-vs-truth to compare against the host, so the
+        # Unpaired: there is no SSIM-vs-truth to compare against the CycleGAN, so the
         # equivalence is checked directly — the split model's cross paths must be
-        # the host generators to floating-point noise.
+        # the CycleGAN generators to floating-point noise.
         print(f"  flow_work {r['flow_work']:.2e} (must be ~0)")
         from model.backbone import ResnetGenerator
         ck = torch.load(a.warm, map_location=DEV)
@@ -412,7 +412,7 @@ def main():
                 for batch in el:
                     inp = to_pm1(batch[side].to(DEV))
                     worst_k = max(worst_k, float((fn(inp) - g(inp)).abs().max()))
-            print(f"  max |split({key}) - host({key})| = {worst_k:.3e}")
+            print(f"  max |split({key}) - cyclegan({key})| = {worst_k:.3e}")
             worst = max(worst, worst_k)
         print(f"  -> {'PASS' if worst < 1e-4 else 'FAIL'} (threshold 1e-4)")
         return
@@ -424,9 +424,9 @@ def main():
         print("shared decoder: dec_B IS dec_A, one decoder for both modalities", flush=True)
     if a.warm and os.path.exists(a.warm):
         ep = m.load_cyclegan(a.warm, map_location=DEV)
-        print(f"warm start from {a.warm} (host epoch {ep})", flush=True)
+        print(f"warm start from {a.warm} (CycleGAN epoch {ep})", flush=True)
     else:
-        print("no warm start — training the host from scratch", flush=True)
+        print("no warm start — training the CycleGAN from scratch", flush=True)
     D = make_discriminators(a.ndf, mix=use_path,
                             mix_b=bool(use_path and a.path_bidir
                                        and a.path_critics == "separate"),
@@ -463,13 +463,13 @@ def main():
                     seen.add(id(p)); out.append(p)
         return out
 
-    host_params = uniq((m.enc_A, m.enc_B, m.dec_A, m.dec_B))
-    n_host = sum(p.numel() for p in host_params)
-    print(f"params: host {n_host/1e6:.2f} M + flow {sum(p.numel() for p in m.flow.parameters())/1e6:.2f} M",
+    cyclegan_params = uniq((m.enc_A, m.enc_B, m.dec_A, m.dec_B))
+    n_cyclegan = sum(p.numel() for p in cyclegan_params)
+    print(f"params: CycleGAN {n_cyclegan/1e6:.2f} M + flow {sum(p.numel() for p in m.flow.parameters())/1e6:.2f} M",
           flush=True)
 
     opt_G = torch.optim.Adam([
-        {"params": host_params, "lr": a.lr},
+        {"params": cyclegan_params, "lr": a.lr},
         {"params": m.flow.parameters(), "lr": a.lr_flow}], betas=(0.5, 0.999))
     opt_D = torch.optim.Adam(itertools.chain(*[D[k].parameters() for k in D]),
                              lr=a.lr, betas=(0.5, 0.999))
@@ -721,7 +721,7 @@ def main():
 
     if a.data != "adni" and not paired:
         # Distributional scoring, three numbers:
-        #   endpoint FID  — the usual A->B / B->A quality, comparable to the host
+        #   endpoint FID  — the usual A->B / B->A quality, comparable to the CycleGAN
         #   path FID      — intermediate frames against real A U real B, the
         #                   unpaired stand-in for the hole metric
         # The reference side is the target domain's TRAIN split (the standard

@@ -54,13 +54,13 @@ python -m data.build_cache
 
 ## Training
 
-Each dataset takes three runs: the CycleGAN host, FlowCycle w/o TR, and
-FlowCycle-TR (resumed from the same stage 2).
+Each dataset takes three runs: a CycleGAN (its generators initialise the encoders
+and decoders), FlowCycle w/o TR, and FlowCycle-TR (resumed from the same stage 2).
 
 **ADNI**
 
 ```bash
-HOST_TAG=host python train_host.py
+python train_cyclegan.py
 
 python train.py --config configs/base.yaml --tag adni_base
 
@@ -73,15 +73,15 @@ python train.py --config configs/morph.yaml --tag adni_tr \
 
 ```bash
 R=$DATA/mnist_petct_paired
-HOST=$FLOWCYCLE_EXPS/mnist/checkpoints/mnist_host/last.pth
+CYCLEGAN=$FLOWCYCLE_EXPS/mnist/checkpoints/mnist_cyclegan/last.pth
 
-HOST_TAG=mnist_host python train_host.py --data folder --data_root $R \
+CYCLEGAN_TAG=mnist_cyclegan python train_cyclegan.py --data folder --data_root $R \
     --img_ch 3 --load_size 72 --crop_size 64 --no_flip \
     --epochs 100 --decay_start 50 --batch 64
 
-python train.py --config configs/mnist_p_base.yaml --data_root $R --warm $HOST
+python train.py --config configs/mnist_p_base.yaml --data_root $R --warm $CYCLEGAN
 
-python train.py --config configs/mnist_p_morph.yaml --data_root $R --warm $HOST \
+python train.py --config configs/mnist_p_morph.yaml --data_root $R --warm $CYCLEGAN \
     --tag mnist_p_tr \
     --resume_stage 2 --resume_from $FLOWCYCLE_EXPS/mnist/checkpoints/mnist_p_base/stage2.pth \
     --w_gan 0.1 --w_path_gan 0 --w_path_smooth 0.3
@@ -92,16 +92,16 @@ python train.py --config configs/mnist_p_morph.yaml --data_root $R --warm $HOST 
 ```bash
 export CYCLEFLOW_DATASET=cityscapes
 R=$DATA/cityscapes_paired
-HOST=$FLOWCYCLE_EXPS/cityscapes/checkpoints/cityscapes_host/last.pth
+CYCLEGAN=$FLOWCYCLE_EXPS/cityscapes/checkpoints/cityscapes_cyclegan/last.pth
 
-HOST_TAG=cityscapes_host python train_host.py --data folder --data_root $R \
+CYCLEGAN_TAG=cityscapes_cyclegan python train_cyclegan.py --data folder --data_root $R \
     --img_ch 3 --load_size 286 --crop_size 256 --n_blocks 9 \
     --epochs 160 --decay_start 80 --batch 8
 
-python train.py --config configs/p2p_base.yaml --data_root $R --warm $HOST \
+python train.py --config configs/p2p_base.yaml --data_root $R --warm $CYCLEGAN \
     --tag cityscapes_base
 
-python train.py --config configs/p2p_base.yaml --data_root $R --warm $HOST \
+python train.py --config configs/p2p_base.yaml --data_root $R --warm $CYCLEGAN \
     --tag cityscapes_tr \
     --resume_stage 2 --resume_from $FLOWCYCLE_EXPS/cityscapes/checkpoints/cityscapes_base/stage2.pth \
     --variant morph --w_latcyc 2.0 --w_path_gan 0 --w_path_smooth 1.0

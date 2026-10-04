@@ -38,12 +38,12 @@ from data.paired_dataset import (
 )
 from model import ResnetGenerator, PatchDiscriminator, init_weights
 
-# The host's weights are what train.py splits into E/D, so they live beside the
-# FlowCycle runs.  HOST_TAG picks the sub-directory (default: the mid-10 host).
+# The CycleGAN weights are what train.py splits into E/D, so they live beside the
+# FlowCycle runs.  CYCLEGAN_TAG picks the sub-directory (default: the mid-10 CycleGAN).
 from server_paths import experiment_root, checkpoint_root
 EXPS = experiment_root()
-RESULTS = os.path.join(EXPS, "checkpoints", os.environ.get("HOST_TAG", "host"))
-LOGDIR = os.path.join(EXPS, "logs", os.environ.get("HOST_TAG", "host"))
+RESULTS = os.path.join(EXPS, "checkpoints", os.environ.get("CYCLEGAN_TAG", "cyclegan"))
+LOGDIR = os.path.join(EXPS, "logs", os.environ.get("CYCLEGAN_TAG", "cyclegan"))
 
 
 # ---------------------------------------------------------------------------

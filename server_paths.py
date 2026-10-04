@@ -95,9 +95,9 @@ def experiment_root():
         return str(base)
     entry = Path(sys.argv[0]).stem
     check_init = '--check_init' in sys.argv or opts.get('check_init', False)
-    training = entry in ('train', 'train_host', 'train_dit', 'train_revgan') and not check_init
-    tag = component(str(opts.get('tag') or (os.environ.get('HOST_TAG', 'host')
-                    if entry == 'train_host' else opts.get('variant', 'morph'))))
+    training = entry in ('train', 'train_cyclegan', 'train_dit', 'train_revgan') and not check_init
+    tag = component(str(opts.get('tag') or (os.environ.get('CYCLEGAN_TAG', 'cyclegan')
+                    if entry == 'train_cyclegan' else opts.get('variant', 'morph'))))
     purpose = component(os.environ.get('CYCLEFLOW_PURPOSE',
                         'check_init' if check_init else tag if training else entry))
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ') + '-' + uuid.uuid4().hex[:8]

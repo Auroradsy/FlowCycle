@@ -22,7 +22,7 @@ Here the two ResnetGenerators are *split* instead of augmented:
 Three properties this buys, all of them checkable:
 
   1. Parameter-neutral.  E_A+D_B is exactly G_A2B and E_B+D_A is exactly G_B2A,
-     so the host costs the same as plain CycleGAN; the flow adds 1.84 M (12 %).
+     so the CycleGAN costs the same as plain CycleGAN; the flow adds 1.84 M (12 %).
   2. `f` is the EXACT identity at init (SpatialActNorm log_scale=bias=0,
      SpatialCoupling last conv zero-init), so a freshly warm-started model
      reproduces plain CycleGAN bit-for-bit on both cross directions.  See
@@ -47,7 +47,7 @@ from .flow import SpatialFlow
 class Encoder(nn.Module):
     """`head` + `down` of a ResnetGenerator -> (B, ngf*4, 28, 28).
 
-    Submodule names match the host so a plain-CycleGAN state_dict loads by
+    Submodule names match the CycleGAN so a plain-CycleGAN state_dict loads by
     prefix with strict=True.  `pre_relu` drops the trailing ReLU of `down`
     (indices of the parameterised layers are unchanged: InstanceNorm here is
     affine=False, ReLU has no parameters).
@@ -142,11 +142,11 @@ class FlowCycle(nn.Module):
         """Initialise the four halves from a trained plain-CycleGAN checkpoint.
 
         E_A + D_B are the two halves of G_T1toFA, E_B + D_A of G_FAtoT1, so with
-        f still at its identity init the cross paths reproduce the host exactly.
+        f still at its identity init the cross paths reproduce the CycleGAN exactly.
         """
         if self.shared_dec:
             raise RuntimeError('a shared decoder cannot be warm-started from a CycleGAN: '
-                               'the host has one decoder per direction and the second load '
+                               'the CycleGAN has one decoder per direction and the second load '
                                'would silently overwrite the first')
         ck = torch.load(path, map_location=map_location)
         A2B, B2A = ck["G_T1toFA"], ck["G_FAtoT1"]
@@ -178,7 +178,7 @@ class FlowCycle(nn.Module):
 
 
 def make_discriminators(ndf=64, mix=False, mix_b=False, img_ch=1):
-    """D_FA / D_T1 (host, unchanged) and optionally D_mix for the morph path.
+    """D_FA / D_T1 (CycleGAN, unchanged) and optionally D_mix for the morph path.
 
     D_mix is trained on real T1 UNION real FA, so "realistic" for it means
     "a real brain slice of either modality" — exactly the supervision an
@@ -200,10 +200,10 @@ def make_discriminators(ndf=64, mix=False, mix_b=False, img_ch=1):
 if __name__ == "__main__":
     m = FlowCycle()
     n = lambda mod: sum(p.numel() for p in mod.parameters())
-    host = n(m.enc_A) + n(m.enc_B) + n(m.dec_A) + n(m.dec_B)
-    print(f"host (= 2 x ResnetGenerator): {host/1e6:.2f} M")
+    cg = n(m.enc_A) + n(m.enc_B) + n(m.dec_A) + n(m.dec_B)
+    print(f"CycleGAN (= 2 x ResnetGenerator): {cg/1e6:.2f} M")
     print(f"flow                        : {n(m.flow)/1e6:.2f} M "
-          f"({100*n(m.flow)/host:.0f} % of host)")
+          f"({100*n(m.flow)/cg:.0f} % of CycleGAN)")
     x = torch.randn(2, 1, 112, 112)
     z = m.enc_A(x)
     print("bottleneck:", tuple(z.shape))
